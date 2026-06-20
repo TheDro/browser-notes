@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "browser-notes",
+  "version": "0.1.0",
+  "description": "Annotate any webpage and revisit your notes.",
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "browser-notes"
+  },
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content/index.ts"],
+      "css": ["src/content/content.css"]
+    }
+  ],
+  "commands": {
+    "annotate": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+K",
+        "mac": "Command+Shift+K"
+      },
+      "description": "Annotate selected text"
+    }
+  },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "host_permissions": ["<all_urls>"]
+}
