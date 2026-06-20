@@ -15,20 +15,26 @@ export function applyHighlight(range: Range, annotation: Annotation): HTMLElemen
 
   // Collect all text nodes within the range
   const textNodes: Array<{ node: Text; start: number; end: number }> = [];
-  const walker = document.createTreeWalker(
-    range.commonAncestorContainer,
-    NodeFilter.SHOW_TEXT,
-  );
 
-  let node: Text | null;
-  while ((node = walker.nextNode() as Text | null)) {
-    if (!range.intersectsNode(node)) continue;
-    const nodeRange = document.createRange();
-    nodeRange.selectNodeContents(node);
+  // If the common ancestor is itself a Text node, the selection is entirely
+  // within it — handle it directly instead of walking (a TreeWalker only
+  // visits children, so it would find nothing).
+  if (range.commonAncestorContainer.nodeType === Node.TEXT_NODE) {
+    const node = range.commonAncestorContainer as Text;
+    textNodes.push({ node, start: range.startOffset, end: range.endOffset });
+  } else {
+    const walker = document.createTreeWalker(
+      range.commonAncestorContainer,
+      NodeFilter.SHOW_TEXT,
+    );
 
-    const start = node === range.startContainer ? range.startOffset : 0;
-    const end = node === range.endContainer ? range.endOffset : node.length;
-    textNodes.push({ node, start, end });
+    let node: Text | null;
+    while ((node = walker.nextNode() as Text | null)) {
+      if (!range.intersectsNode(node)) continue;
+      const start = node === range.startContainer ? range.startOffset : 0;
+      const end = node === range.endContainer ? range.endOffset : node.length;
+      textNodes.push({ node, start, end });
+    }
   }
 
   for (const { node: textNode, start, end } of textNodes) {

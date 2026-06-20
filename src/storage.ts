@@ -4,6 +4,7 @@ const KEY = 'annotations';
 
 export async function getAnnotations(): Promise<Annotation[]> {
   const result = await chrome.storage.local.get(KEY);
+  console.log({annotations: result})
   return (result[KEY] as Annotation[] | undefined) ?? [];
 }
 

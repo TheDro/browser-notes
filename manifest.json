@@ -25,6 +25,13 @@
         "mac": "Command+Shift+K"
       },
       "description": "Annotate selected text"
+    },
+    "clear-page": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+U",
+        "mac": "Command+Shift+U"
+      },
+      "description": "Clear all annotations for the current page"
     }
   },
   "permissions": ["storage", "activeTab", "scripting"],

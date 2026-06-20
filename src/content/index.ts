@@ -12,7 +12,7 @@ let lastKnownHref = location.href;
 async function loadAnnotationsForPage(): Promise<void> {
   const all = await getAnnotations();
   const matching = all.filter((a) => matchesUrl(a, location.href));
-  console.log({matching})
+
 
   activeAnnotations = new Map();
   for (const annotation of matching) {
@@ -102,6 +102,12 @@ chrome.runtime.onMessage.addListener((rawMessage: unknown) => {
   const message = rawMessage as Message;
   if (message.type === 'TRIGGER_ANNOTATION') {
     handleTriggerAnnotation();
+  } else if (message.type === 'CLEAR_PAGE') {
+    for (const id of activeAnnotations.keys()) {
+      deleteAnnotation(id);
+    }
+    activeAnnotations.clear();
+    removeAllHighlights();
   } else if (message.type === 'JUMP_TO_ANNOTATION') {
     const mark = getMarkElement(message.id);
     if (mark) {

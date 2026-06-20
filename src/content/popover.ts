@@ -36,8 +36,8 @@ function positionNear(rect: DOMRect): void {
   const popW = 280;
   const popH = el.offsetHeight || 200;
 
-  let left = rect.left + window.scrollX;
-  let top = rect.bottom + window.scrollY + margin;
+  let left = rect.left;
+  let top = rect.bottom + margin;
 
   // Clamp horizontally
   if (left + popW > window.innerWidth - margin) {
@@ -46,10 +46,10 @@ function positionNear(rect: DOMRect): void {
   left = Math.max(margin, left);
 
   // Flip above if not enough room below
-  if (top + popH > window.scrollY + window.innerHeight - margin) {
-    top = rect.top + window.scrollY - popH - margin;
+  if (top + popH > window.innerHeight - margin) {
+    top = rect.top - popH - margin;
   }
-  top = Math.max(window.scrollY + margin, top);
+  top = Math.max(margin, top);
 
   el.style.left = `${left}px`;
   el.style.top = `${top}px`;

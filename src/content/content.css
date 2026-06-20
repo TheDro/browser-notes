@@ -89,6 +89,7 @@ mark.bn-highlight.bn-pulse {
 .bn-color-swatch {
   width: 20px;
   height: 20px;
+  padding: 10px;
   border-radius: 50%;
   border: 2px solid transparent;
   cursor: pointer;

@@ -21,4 +21,5 @@ export interface Annotation {
 
 export type Message =
   | { type: 'TRIGGER_ANNOTATION' }
-  | { type: 'JUMP_TO_ANNOTATION'; id: string };
+  | { type: 'JUMP_TO_ANNOTATION'; id: string }
+  | { type: 'CLEAR_PAGE' };
