@@ -3,6 +3,8 @@ chrome.commands.onCommand.addListener((command) => {
   chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
     const tab = tabs[0];
     if (tab?.id == null) return;
-    chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_ANNOTATION' });
+    chrome.tabs.sendMessage(tab.id, { type: 'TRIGGER_ANNOTATION' }).catch(() => {
+      // Content script not present on this page (e.g. chrome:// or new tab).
+    });
   });
 });

@@ -12,6 +12,7 @@ let lastKnownHref = location.href;
 async function loadAnnotationsForPage(): Promise<void> {
   const all = await getAnnotations();
   const matching = all.filter((a) => matchesUrl(a, location.href));
+  console.log({matching})
 
   activeAnnotations = new Map();
   for (const annotation of matching) {

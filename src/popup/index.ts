@@ -26,8 +26,12 @@ async function init(): Promise<void> {
   renderNoteList(content, annotations, async (id) => {
     if (!tab?.id) return;
     const message: Message = { type: 'JUMP_TO_ANNOTATION', id };
-    await chrome.tabs.sendMessage(tab.id, message);
-    window.close();
+    try {
+      await chrome.tabs.sendMessage(tab.id, message);
+      window.close();
+    } catch {
+      // Content script not present on this page (e.g. chrome:// or new tab).
+    }
   });
 }
 
