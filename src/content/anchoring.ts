@@ -152,14 +152,6 @@ function contextMatches(text: string, prefixContext: string, suffixContext: stri
   return prefixSim >= 0.8 || suffixSim >= 0.8;
 }
 
-function rangeFromTextNode(textNode: Text, offset: number, length: number): Range {
-  const range = document.createRange();
-  // The text might span multiple text nodes; for simplicity anchor to the single node
-  const endOffset = Math.min(offset + length, textNode.length);
-  range.setStart(textNode, offset);
-  range.setEnd(textNode, endOffset);
-  return range;
-}
 
 function searchInElement(el: Element, anchor: AnchorData): Range | null {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -282,6 +274,3 @@ export function findAnchor(anchor: AnchorData): Range | null {
   return null;
 }
 
-export function rangeFromSingleNode(node: Text, startOffset: number, endOffset: number): Range {
-  return rangeFromTextNode(node, startOffset, endOffset - startOffset);
-}
