@@ -87,10 +87,10 @@ function handleHighlightClick(annotationId: string, markEl: HTMLElement): void {
 
 // Force user-select while Shift is held, to allow selecting text on sites that disable it
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Shift') document.body.classList.add('bn-shift-select');
+  if (e.key === 'Alt') document.body.classList.add('bn-alt-select');
 });
 document.addEventListener('keyup', (e) => {
-  if (e.key === 'Shift') document.body.classList.remove('bn-shift-select');
+  if (e.key === 'Alt') document.body.classList.remove('bn-alt-select');
 });
 
 // Delegated click listener for highlights
