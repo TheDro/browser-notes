@@ -140,11 +140,11 @@ const observer = new MutationObserver(() => {
           applyHighlight(range, updated);
         }
       }
-      // Repair detached marks
+      // Repair detached or missing marks
       for (const [id, annotation] of activeAnnotations) {
         if (annotation.anchorFailed) continue;
         const mark = getMarkElement(id);
-        if (mark && !document.body.contains(mark)) {
+        if (!mark || !document.body.contains(mark)) {
           const range = findAnchor(annotation.anchor);
           if (range) {
             applyHighlight(range, annotation);

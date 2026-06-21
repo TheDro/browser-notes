@@ -3,10 +3,9 @@ import type { AnchorData } from '../types';
 function getTextContext(node: Text, offset: number, direction: 'before' | 'after', maxLen = 50): string {
   let result = '';
   let current: Node | null = node;
-  let startOffset = direction === 'before' ? offset : offset;
 
   if (direction === 'before') {
-    result = node.textContent?.slice(0, startOffset) ?? '';
+    result = node.textContent?.slice(0, offset) ?? '';
     current = node;
     while (result.length < maxLen) {
       const prev = prevTextNode(current);
@@ -16,7 +15,7 @@ function getTextContext(node: Text, offset: number, direction: 'before' | 'after
     }
     return result.slice(-maxLen);
   } else {
-    result = node.textContent?.slice(startOffset) ?? '';
+    result = node.textContent?.slice(offset) ?? '';
     current = node;
     while (result.length < maxLen) {
       const next = nextTextNode(current);
@@ -157,7 +156,7 @@ function searchInElement(el: Element, anchor: AnchorData): Range | null {
 }
 
 function buildRange(
-  nodes: Array<{ node: Text; start: number; normLength?: number }>,
+  nodes: Array<{ node: Text; start: number; normLength: number }>,
   start: number,
   length: number,
 ): Range {
@@ -166,10 +165,7 @@ function buildRange(
   let startSet = false;
 
   for (const entry of nodes) {
-    const { node, start: nodeStart } = entry;
-    // Use normalized length if provided (for whitespace-normalized searches),
-    // otherwise fall back to raw text length.
-    const nodeLen = entry.normLength ?? (node.textContent?.length ?? 0);
+    const { node, start: nodeStart, normLength: nodeLen } = entry;
     const nodeEnd = nodeStart + nodeLen;
     if (!startSet && nodeEnd > start) {
       // Map normalized offset back to raw offset within this node

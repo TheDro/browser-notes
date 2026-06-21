@@ -1,5 +1,5 @@
 import type { Annotation, Scope } from '../types';
-import { getPrefixUrlKey, normalizeUrl } from '../url-utils';
+import { normalizeUrl } from '../url-utils';
 
 const COLORS = ['#ffd700', '#ff6b6b', '#51cf66', '#74c0fc', '#cc5de8'];
 
@@ -61,9 +61,7 @@ export function showCreate(rect: DOMRect, onSave: SaveCallback): void {
   el.style.display = 'block';
 
   const currentUrl = location.href;
-  const { normalized } = normalizeUrl(currentUrl);
-  const prefixKey = getPrefixUrlKey(currentUrl);
-  const domain = normalizeUrl(currentUrl).domain;
+  const { normalized, domain } = normalizeUrl(currentUrl);
 
   // Textarea
   const textarea = document.createElement('textarea');
@@ -95,7 +93,6 @@ export function showCreate(rect: DOMRect, onSave: SaveCallback): void {
 
   const scopes: Array<{ value: Scope; label: string }> = [
     { value: 'exact', label: `This page (${normalized})` },
-    { value: 'prefix', label: `Pages under ${prefixKey}` },
     { value: 'domain', label: `All of ${domain}` },
   ];
 
@@ -171,7 +168,6 @@ export function showView(
   scopeDisplay.className = 'bn-scope-display';
   const scopeLabel: Record<Scope, string> = {
     exact: 'This page only',
-    prefix: `Pages under ${annotation.urlKey}`,
     domain: `All of ${annotation.urlKey}`,
   };
   scopeDisplay.textContent = scopeLabel[annotation.scope];

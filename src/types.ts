@@ -1,4 +1,4 @@
-export type Scope = 'domain' | 'prefix' | 'exact';
+export type Scope = 'domain' | 'exact';
 
 export interface AnchorData {
   selectedText: string;
