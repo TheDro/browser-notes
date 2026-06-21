@@ -32,6 +32,13 @@
         "mac": "Command+Shift+U"
       },
       "description": "Clear all annotations for the current page"
+    },
+    "retry-highlights": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+L",
+        "mac": "Command+Shift+L"
+      },
+      "description": "Retry highlighting all annotations on the current page"
     }
   },
   "permissions": ["storage", "activeTab", "scripting"],

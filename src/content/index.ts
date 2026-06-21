@@ -109,6 +109,8 @@ chrome.runtime.onMessage.addListener((rawMessage: unknown) => {
     });
     activeAnnotations.clear();
     removeAllHighlights();
+  } else if (message.type === 'RETRY_HIGHLIGHTS') {
+    handleForceRetryHighlights();
   } else if (message.type === 'JUMP_TO_ANNOTATION') {
     const mark = getMarkElement(message.id);
     if (mark) {
@@ -117,6 +119,46 @@ chrome.runtime.onMessage.addListener((rawMessage: unknown) => {
     }
   }
 });
+
+function handleRetryHighlights(): void {
+  // Retry any previously failed annotations
+  for (const [id, annotation] of activeAnnotations) {
+    if (!annotation.anchorFailed) continue;
+    const range = findAnchor(annotation.anchor);
+    if (range) {
+      const updated = { ...annotation, anchorFailed: false };
+      activeAnnotations.set(id, updated);
+      applyHighlight(range, updated);
+    }
+  }
+  // Repair detached or missing marks
+  for (const [id, annotation] of activeAnnotations) {
+    if (annotation.anchorFailed) continue;
+    const mark = getMarkElement(id);
+    if (!mark || !document.body.contains(mark)) {
+      const range = findAnchor(annotation.anchor);
+      if (range) {
+        applyHighlight(range, annotation);
+      } else {
+        activeAnnotations.set(id, { ...annotation, anchorFailed: true });
+      }
+    }
+  }
+}
+
+function handleForceRetryHighlights(): void {
+  removeAllHighlights();
+  for (const [id, annotation] of activeAnnotations) {
+    const range = findAnchor(annotation.anchor);
+    if (range) {
+      const updated = { ...annotation, anchorFailed: false };
+      activeAnnotations.set(id, updated);
+      applyHighlight(range, updated);
+    } else {
+      activeAnnotations.set(id, { ...annotation, anchorFailed: true });
+    }
+  }
+}
 
 // SPA support: MutationObserver + URL change detection
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -131,29 +173,7 @@ const observer = new MutationObserver(() => {
       activeAnnotations.clear();
       await loadAnnotationsForPage();
     } else {
-      // Same URL: retry any previously failed annotations
-      for (const [id, annotation] of activeAnnotations) {
-        if (!annotation.anchorFailed) continue;
-        const range = findAnchor(annotation.anchor);
-        if (range) {
-          const updated = { ...annotation, anchorFailed: false };
-          activeAnnotations.set(id, updated);
-          applyHighlight(range, updated);
-        }
-      }
-      // Repair detached or missing marks
-      for (const [id, annotation] of activeAnnotations) {
-        if (annotation.anchorFailed) continue;
-        const mark = getMarkElement(id);
-        if (!mark || !document.body.contains(mark)) {
-          const range = findAnchor(annotation.anchor);
-          if (range) {
-            applyHighlight(range, annotation);
-          } else {
-            activeAnnotations.set(id, { ...annotation, anchorFailed: true });
-          }
-        }
-      }
+      handleRetryHighlights();
     }
   }, 500);
 });
