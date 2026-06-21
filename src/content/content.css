@@ -1,3 +1,7 @@
+body.bn-shift-select * {
+  user-select: text !important;
+}
+
 mark.bn-highlight {
   background: var(--bn-color, #ffd70088);
   border-bottom: 2px solid var(--bn-color-solid, #ffd700);
