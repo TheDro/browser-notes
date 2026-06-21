@@ -32,7 +32,7 @@ export function captureAnchor(selection: Selection): AnchorData {
 }
 
 function buildRange(
-  nodes: Array<{ node: Text; start: number; normLength: number }>,
+  nodes: Array<{ node: Text; nodeStart: number; normLength: number }>,
   start: number,
   length: number,
 ): Range {
@@ -41,8 +41,8 @@ function buildRange(
   let startSet = false;
 
   for (const entry of nodes) {
-    const { node, start: nodeStart, normLength: nodeLen } = entry;
-    const nodeEnd = nodeStart + nodeLen;
+    const { node, nodeStart, normLength } = entry;
+    const nodeEnd = nodeStart + normLength;
     if (!startSet && nodeEnd > start) {
       range.setStart(node, start - nodeStart);
       startSet = true;
@@ -69,10 +69,10 @@ export function findAnchor(anchor: AnchorData): Range | null {
 
   const fullText = rawText.replace(/\s+/g, ' ').trim();
   let normOffset = 0;
-  const nodes: Array<{ node: Text; start: number; normLength: number }> = [];
+  const nodes: Array<{ node: Text; nodeStart: number; normLength: number }> = [];
   for (const entry of rawNodes) {
     const normLength = (entry.node.textContent ?? '').replace(/\s+/g, ' ').length;
-    nodes.push({ node: entry.node, start: normOffset, normLength });
+    nodes.push({ node: entry.node, nodeStart: normOffset, normLength });
     normOffset += normLength + 1;
   }
 
@@ -87,7 +87,7 @@ export function findAnchor(anchor: AnchorData): Range | null {
     if (idx === -1) break;
 
     // Find which text node contains this offset to score its ancestors
-    const matchNode = nodes.find(n => idx >= n.start && idx < n.start + n.normLength);
+    const matchNode = nodes.find(n => idx >= n.nodeStart && idx < n.nodeStart + n.normLength);
     const score = matchNode ? scoreAncestors(matchNode.node, ancestorTags) : 0;
 
     if (score > bestScore) {
