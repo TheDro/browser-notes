@@ -1,66 +1,5 @@
 import type { AnchorData } from '../types';
 
-function getTextContext(node: Text, offset: number, direction: 'before' | 'after', maxLen = 50): string {
-  let result = '';
-  let current: Node | null = node;
-
-  if (direction === 'before') {
-    result = node.textContent?.slice(0, offset) ?? '';
-    current = node;
-    while (result.length < maxLen) {
-      const prev = prevTextNode(current);
-      if (!prev) break;
-      result = (prev.textContent ?? '') + result;
-      current = prev;
-    }
-    return result.slice(-maxLen);
-  } else {
-    result = node.textContent?.slice(offset) ?? '';
-    current = node;
-    while (result.length < maxLen) {
-      const next = nextTextNode(current);
-      if (!next) break;
-      result += next.textContent ?? '';
-      current = next;
-    }
-    return result.slice(0, maxLen);
-  }
-}
-
-function prevTextNode(node: Node): Text | null {
-  let current: Node | null = node;
-  while (current) {
-    if (current.previousSibling) {
-      current = current.previousSibling;
-      while (current.lastChild) current = current.lastChild;
-      if (current.nodeType === Node.TEXT_NODE) return current as Text;
-    } else {
-      current = current.parentNode;
-      if (!current || current === document.body) return null;
-    }
-  }
-  return null;
-}
-
-function nextTextNode(node: Node): Text | null {
-  let current: Node | null = node;
-  while (current) {
-    if (current.firstChild) {
-      current = current.firstChild;
-    } else if (current.nextSibling) {
-      current = current.nextSibling;
-    } else {
-      while (current.parentNode && !current.parentNode.nextSibling) {
-        current = current.parentNode;
-        if (current === document.body) return null;
-      }
-      if (!current.parentNode) return null;
-      current = current.parentNode.nextSibling;
-    }
-    if (current && current.nodeType === Node.TEXT_NODE) return current as Text;
-  }
-  return null;
-}
 
 const BLOCK_TAGS = new Set([
   'P','DIV','ARTICLE','SECTION','LI','BLOCKQUOTE','TD','TH','MAIN',
@@ -106,21 +45,10 @@ export function captureAnchor(selection: Selection): AnchorData {
   const range = selection.getRangeAt(0);
   const selectedText = selection.toString().replace(/\s+/g, ' ').trim();
   const startNode = range.startContainer as Text;
-  const endNode = range.endContainer as Text;
-
-  const prefixContext = getTextContext(startNode, range.startOffset, 'before');
-  const suffixContext = getTextContext(endNode, range.endOffset, 'after');
   const blockXPath = nearestBlockXPath(startNode);
 
-  return { selectedText, prefixContext, suffixContext, blockXPath };
+  return { selectedText, blockXPath };
 }
-
-function contextMatches(text: string, prefixContext: string, suffixContext: string, index: number, len: number): boolean {
-  const actualPrefix = text.slice(Math.max(0, index - 50), index);
-  const actualSuffix = text.slice(index + len, index + len + 50);
-  return prefixContext.endsWith(actualPrefix) || actualSuffix.startsWith(suffixContext.slice(0, actualSuffix.length));
-}
-
 
 function searchInElement(el: Element, anchor: AnchorData): Range | null {
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -146,10 +74,6 @@ function searchInElement(el: Element, anchor: AnchorData): Range | null {
 
   const idx = fullText.indexOf(anchor.selectedText);
   if (idx === -1) return null;
-
-  if (!contextMatches(fullText, anchor.prefixContext, anchor.suffixContext, idx, anchor.selectedText.length)) {
-    return null;
-  }
 
   // Find the text nodes that span this range (using normalized offsets)
   return buildRange(normNodes, idx, anchor.selectedText.length);
@@ -218,7 +142,7 @@ export function findAnchor(anchor: AnchorData): Range | null {
   }
 
   const idx = fullText.indexOf(anchor.selectedText);
-  if (idx !== -1 && contextMatches(fullText, anchor.prefixContext, anchor.suffixContext, idx, anchor.selectedText.length)) {
+  if (idx !== -1) {
     return buildRange(nodes, idx, anchor.selectedText.length);
   }
 

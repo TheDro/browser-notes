@@ -2,8 +2,6 @@ export type Scope = 'domain' | 'exact';
 
 export interface AnchorData {
   selectedText: string;
-  prefixContext: string;
-  suffixContext: string;
   blockXPath: string;
 }
 
