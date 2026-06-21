@@ -85,12 +85,28 @@ function handleHighlightClick(annotationId: string, markEl: HTMLElement): void {
   );
 }
 
-// Force user-select while Shift is held, to allow selecting text on sites that disable it
+// Force user-select while Ctrl+Shift (Cmd+Shift on Mac) is held, to allow selecting
+// text on sites that disable it.
+let isShiftHeld = false;
+let isCtrlOrMetaHeld = false;
+
+function updateAltSelect(): void {
+  if (isShiftHeld && isCtrlOrMetaHeld) {
+    document.body.classList.add('bn-alt-select');
+  } else {
+    document.body.classList.remove('bn-alt-select');
+  }
+}
+
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Alt') document.body.classList.add('bn-alt-select');
+  if (e.key === 'Shift') isShiftHeld = true;
+  if (e.key === 'Control' || e.key === 'Meta') isCtrlOrMetaHeld = true;
+  updateAltSelect();
 });
 document.addEventListener('keyup', (e) => {
-  if (e.key === 'Alt') document.body.classList.remove('bn-alt-select');
+  if (e.key === 'Shift') isShiftHeld = false;
+  if (e.key === 'Control' || e.key === 'Meta') isCtrlOrMetaHeld = false;
+  updateAltSelect();
 });
 
 // Delegated click listener for highlights
