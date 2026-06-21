@@ -1,5 +1,5 @@
 import type { Annotation, Message } from '../types';
-import { getAnnotations, saveAnnotation, updateAnnotation, deleteAnnotation } from '../storage';
+import { getAnnotations, saveAnnotation, updateAnnotation, deleteAnnotation, deleteAnnotations } from '../storage';
 import { matchesUrl, deriveUrlKey } from '../url-utils';
 import { captureAnchor, findAnchor } from './anchoring';
 import { applyHighlight, removeHighlight, removeAllHighlights, pulseHighlight, getMarkElement } from './highlight';
@@ -103,9 +103,10 @@ chrome.runtime.onMessage.addListener((rawMessage: unknown) => {
   if (message.type === 'TRIGGER_ANNOTATION') {
     handleTriggerAnnotation();
   } else if (message.type === 'CLEAR_PAGE') {
-    for (const id of activeAnnotations.keys()) {
-      deleteAnnotation(id);
-    }
+    getAnnotations().then((all) => {
+      const ids = all.filter((a) => matchesUrl(a, location.href)).map((a) => a.id);
+      deleteAnnotations(ids);
+    });
     activeAnnotations.clear();
     removeAllHighlights();
   } else if (message.type === 'JUMP_TO_ANNOTATION') {

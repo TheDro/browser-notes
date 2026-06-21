@@ -26,3 +26,9 @@ export async function deleteAnnotation(id: string): Promise<void> {
   const all = await getAnnotations();
   await setAnnotations(all.filter((a) => a.id !== id));
 }
+
+export async function deleteAnnotations(ids: string[]): Promise<void> {
+  const set = new Set(ids);
+  const all = await getAnnotations();
+  await setAnnotations(all.filter((a) => !set.has(a.id)));
+}
