@@ -116,40 +116,10 @@ export function captureAnchor(selection: Selection): AnchorData {
   return { selectedText, prefixContext, suffixContext, blockXPath };
 }
 
-function levenshteinSimilarity(a: string, b: string): number {
-  if (!a.length || !b.length) return 0;
-  const longer = a.length > b.length ? a : b;
-  const shorter = a.length > b.length ? b : a;
-  const maxLen = longer.length;
-  if (maxLen === 0) return 1;
-
-  const dist = levenshtein(longer, shorter);
-  return (maxLen - dist) / maxLen;
-}
-
-function levenshtein(a: string, b: string): number {
-  const m = a.length, n = b.length;
-  const dp: number[] = Array.from({ length: n + 1 }, (_, i) => i);
-  for (let i = 1; i <= m; i++) {
-    let prev = dp[0];
-    dp[0] = i;
-    for (let j = 1; j <= n; j++) {
-      const temp = dp[j];
-      dp[j] = a[i - 1] === b[j - 1]
-        ? prev
-        : 1 + Math.min(prev, dp[j], dp[j - 1]);
-      prev = temp;
-    }
-  }
-  return dp[n];
-}
-
 function contextMatches(text: string, prefixContext: string, suffixContext: string, index: number, len: number): boolean {
   const actualPrefix = text.slice(Math.max(0, index - 50), index);
   const actualSuffix = text.slice(index + len, index + len + 50);
-  const prefixSim = levenshteinSimilarity(actualPrefix, prefixContext.slice(-actualPrefix.length || undefined));
-  const suffixSim = levenshteinSimilarity(actualSuffix, suffixContext.slice(0, actualSuffix.length || undefined));
-  return prefixSim >= 0.8 || suffixSim >= 0.8;
+  return prefixContext.endsWith(actualPrefix) || actualSuffix.startsWith(suffixContext.slice(0, actualSuffix.length));
 }
 
 
@@ -254,21 +224,6 @@ export function findAnchor(anchor: AnchorData): Range | null {
   const idx = fullText.indexOf(anchor.selectedText);
   if (idx !== -1 && contextMatches(fullText, anchor.prefixContext, anchor.suffixContext, idx, anchor.selectedText.length)) {
     return buildRange(nodes, idx, anchor.selectedText.length);
-  }
-
-  // Step 3: Partial match on first 20 chars
-  const partial = anchor.selectedText.slice(0, 20);
-  if (partial.length >= 5) {
-    const partialIdx = fullText.indexOf(partial);
-    if (partialIdx !== -1) {
-      const actualPrefix = fullText.slice(Math.max(0, partialIdx - 50), partialIdx);
-      const actualSuffix = fullText.slice(partialIdx + partial.length, partialIdx + partial.length + 50);
-      const prefixMatch = levenshteinSimilarity(actualPrefix, anchor.prefixContext.slice(-actualPrefix.length || undefined)) >= 0.8;
-      const suffixMatch = levenshteinSimilarity(actualSuffix, anchor.suffixContext.slice(0, actualSuffix.length || undefined)) >= 0.8;
-      if (prefixMatch || suffixMatch) {
-        return buildRange(nodes, partialIdx, partial.length);
-      }
-    }
   }
 
   return null;
