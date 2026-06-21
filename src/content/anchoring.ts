@@ -58,22 +58,20 @@ function buildRange(
 export function findAnchor(anchor: AnchorData): Range | null {
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
   let node: Text | null;
-  let rawText = '';
-  const rawNodes: Array<{ node: Text; start: number }> = [];
+  let fullText = '';
+  const nodes: Array<{ node: Text; nodeStart: number; normLength: number }> = [];
 
   while ((node = walker.nextNode() as Text | null)) {
-    if (rawText.length > 0) rawText += ' ';
-    rawNodes.push({ node, start: rawText.length });
-    rawText += node.textContent ?? '';
-  }
-
-  const fullText = rawText.replace(/\s+/g, ' ').trim();
-  let normOffset = 0;
-  const nodes: Array<{ node: Text; nodeStart: number; normLength: number }> = [];
-  for (const entry of rawNodes) {
-    const normLength = (entry.node.textContent ?? '').replace(/\s+/g, ' ').length;
-    nodes.push({ node: entry.node, nodeStart: normOffset, normLength });
-    normOffset += normLength + 1;
+    // Normalize whitespace runs within this node's text
+    const norm = (node.textContent ?? '').replace(/\s+/g, ' ');
+    // Strip leading space if fullText already ends with one (or is empty), trailing space always stripped
+    const chunk = (fullText.length === 0 || fullText.endsWith(' ') ? norm.trimStart() : norm).trimEnd();
+    if (chunk.length === 0) continue;
+    // Add a separator space between nodes when needed
+    if (fullText.length > 0 && !fullText.endsWith(' ')) fullText += ' ';
+    const nodeStart = fullText.length;
+    fullText += chunk;
+    nodes.push({ node, nodeStart, normLength: chunk.length });
   }
 
   // Collect all occurrences of selectedText, score each by ancestor tag match
