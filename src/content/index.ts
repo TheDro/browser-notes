@@ -120,27 +120,28 @@ chrome.runtime.onMessage.addListener((rawMessage: unknown) => {
   }
 });
 
-function handleRetryHighlights(): void {
-  // Retry any previously failed annotations
-  for (const [id, annotation] of activeAnnotations) {
-    if (!annotation.anchorFailed) continue;
-    const range = findAnchor(annotation.anchor);
-    if (range) {
-      const updated = { ...annotation, anchorFailed: false };
-      activeAnnotations.set(id, updated);
-      applyHighlight(range, updated);
-    }
+// Try to anchor and highlight a single annotation, updating its status in-place.
+function reanchorAnnotation(id: string, annotation: Annotation): void {
+  const range = findAnchor(annotation.anchor);
+  if (range) {
+    const updated = { ...annotation, anchorFailed: false };
+    activeAnnotations.set(id, updated);
+    applyHighlight(range, updated);
+  } else {
+    activeAnnotations.set(id, { ...annotation, anchorFailed: true });
   }
-  // Repair detached or missing marks
+}
+
+function handleRetryHighlights(): void {
   for (const [id, annotation] of activeAnnotations) {
-    if (annotation.anchorFailed) continue;
-    const mark = getMarkElement(id);
-    if (!mark || !document.body.contains(mark)) {
-      const range = findAnchor(annotation.anchor);
-      if (range) {
-        applyHighlight(range, annotation);
-      } else {
-        activeAnnotations.set(id, { ...annotation, anchorFailed: true });
+    if (annotation.anchorFailed) {
+      // Retry previously failed annotations
+      reanchorAnnotation(id, annotation);
+    } else {
+      // Repair detached or missing marks
+      const mark = getMarkElement(id);
+      if (!mark || !document.body.contains(mark)) {
+        reanchorAnnotation(id, annotation);
       }
     }
   }
@@ -149,14 +150,7 @@ function handleRetryHighlights(): void {
 function handleForceRetryHighlights(): void {
   removeAllHighlights();
   for (const [id, annotation] of activeAnnotations) {
-    const range = findAnchor(annotation.anchor);
-    if (range) {
-      const updated = { ...annotation, anchorFailed: false };
-      activeAnnotations.set(id, updated);
-      applyHighlight(range, updated);
-    } else {
-      activeAnnotations.set(id, { ...annotation, anchorFailed: true });
-    }
+    reanchorAnnotation(id, annotation);
   }
 }
 

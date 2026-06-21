@@ -216,6 +216,6 @@ export function showView(
   noteEl.focus();
 }
 
-export function hide(): void {
+function hide(): void {
   if (popoverEl) popoverEl.style.display = 'none';
 }

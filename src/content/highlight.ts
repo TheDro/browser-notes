@@ -10,7 +10,7 @@ function colorToBackground(hex: string): string {
   return `rgba(${r},${g},${b},0.35)`;
 }
 
-export function applyHighlight(range: Range, annotation: Annotation): HTMLElement[] {
+export function applyHighlight(range: Range, annotation: Annotation): void {
   const marks: HTMLElement[] = [];
 
   // Collect all text nodes within the range
@@ -41,8 +41,6 @@ export function applyHighlight(range: Range, annotation: Annotation): HTMLElemen
     if (start >= end) continue;
     wrapTextNode(textNode, start, end, annotation, marks);
   }
-
-  return marks;
 }
 
 function wrapTextNode(

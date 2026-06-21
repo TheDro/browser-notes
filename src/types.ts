@@ -2,7 +2,7 @@ export type Scope = 'domain' | 'exact';
 
 export interface AnchorData {
   selectedText: string;
-  ancestorTags?: string[];
+  ancestorTags: string[];
 }
 
 export interface Annotation {
