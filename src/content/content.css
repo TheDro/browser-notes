@@ -39,6 +39,7 @@ mark.bn-highlight.bn-pulse {
 
 #bn-popover textarea {
   all: unset;
+  box-sizing: border-box;
   display: block;
   width: 100%;
   min-height: 72px;
